@@ -2,13 +2,18 @@ import scrapy
 #Titulos = //h1/a/text()
 #Citas = //span[@class="text" and @itemprop="text"]/text()
 #Top ten tags = //div[contains(@class, "tags-box")]//span[@class="tag-item"]/a/text()
-
+#Next page button = //ul[@class="pager"]//li[@class="next"]/a/@href
 
 class ScraperQuotes(scrapy.Spider):
     name='quotes'
     start_urls= [
         'https://quotes.toscrape.com/page/1/'
     ]
+
+    custom_settings = {
+        'FEED_URI': 'quotes.json',
+        'FEED_FORMAT': 'json'
+    }
 
     def parse(self, response):
         title= response.xpath('//h1/a/text()').get()
@@ -22,5 +27,7 @@ class ScraperQuotes(scrapy.Spider):
 
         }
 
+        next_page_button_link = response.xpath('//ul[@class="pager"]//li[@class="next"]/a/@href').get()
 
-       
+        if next_page_button_link:
+            yield response.follow(next_page_button_link, callback=self.parse)
